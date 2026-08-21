@@ -5,41 +5,76 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Smart Inventory</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
 
-<!-- ============ MAIN APP (Direct Access) ============ -->
-<div id="mainApp" style="padding-bottom:70px;background:#f5f7fb;min-height:100vh">
+<!-- ============ MAIN APP ============ -->
+<div id="mainApp">
+
+    <!-- ========== STATUS BAR ========== -->
+    <div class="status-bar">
+        <span>📱 Smart Inventory</span>
+        <span>34°C ☀️</span>
+    </div>
 
     <!-- ========== HOME PAGE ========== -->
     <div id="homePage" class="page active">
         <div class="container">
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:15px 0">
+            <!-- Header -->
+            <div class="header">
                 <div>
-                    <h2 style="font-size:22px">🏠 Dashboard</h2>
-                    <p style="color:#6b7280;font-size:13px">Welcome to Smart Inventory</p>
+                    <h1 class="greeting">👋 Welcome back!</h1>
+                    <p class="sub-greeting">Manage your inventory smarter</p>
                 </div>
-                <div style="display:flex;gap:8px">
-                    <button onclick="exportData()" style="padding:6px 12px;background:#22c55e;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer">📤</button>
-                    <button onclick="clearAllData()" style="padding:6px 12px;background:#ef4444;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer">🗑️</button>
+                <div class="header-actions">
+                    <button onclick="exportData()" class="icon-btn">📤</button>
+                    <button onclick="clearAllData()" class="icon-btn danger">🗑️</button>
                 </div>
-            </div>
-            
-            <div class="stats">
-                <div class="stat-card"><div class="num" id="totalSections">0</div><div class="lbl">Sections</div></div>
-                <div class="stat-card green"><div class="num" id="totalProducts">0</div><div class="lbl">Products</div></div>
-                <div class="stat-card orange"><div class="num" id="totalStock">0</div><div class="lbl">Total Stock</div></div>
-            </div>
-            
-            <h3 style="margin:15px 0 10px;font-size:16px">⚡ Quick Actions</h3>
-            <div class="quick-actions">
-                <div class="quick-btn" onclick="openModal('addSection')"><span class="icon">📁</span><span class="txt">New Section</span></div>
-                <div class="quick-btn" onclick="openModal('addProduct')"><span class="icon">➕</span><span class="txt">Add Product</span></div>
-                <div class="quick-btn" onclick="openModal('bulkAdd')"><span class="icon">📥</span><span class="txt">Bulk Add</span></div>
-                <div class="quick-btn" onclick="openModal('aiSet')"><span class="icon">🤖</span><span class="txt">AI Set Maker</span></div>
             </div>
 
-            <h3 style="margin:15px 0 10px;font-size:16px">📦 Sections</h3>
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📁</div>
+                    <div class="stat-number" id="totalSections">0</div>
+                    <div class="stat-label">Sections</div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-icon">📦</div>
+                    <div class="stat-number" id="totalProducts">0</div>
+                    <div class="stat-label">Products</div>
+                </div>
+                <div class="stat-card orange">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-number" id="totalStock">0</div>
+                    <div class="stat-label">Total Stock</div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="section-title">⚡ Quick Actions</div>
+            <div class="quick-grid">
+                <div class="quick-card" onclick="openModal('addSection')">
+                    <div class="quick-icon" style="background:#ede9fe;color:#7c3aed">📁</div>
+                    <div class="quick-label">New Section</div>
+                </div>
+                <div class="quick-card" onclick="openModal('addProduct')">
+                    <div class="quick-icon" style="background:#dbeafe;color:#2563eb">➕</div>
+                    <div class="quick-label">Add Product</div>
+                </div>
+                <div class="quick-card" onclick="openModal('bulkAdd')">
+                    <div class="quick-icon" style="background:#d1fae5;color:#059669">📥</div>
+                    <div class="quick-label">Bulk Add</div>
+                </div>
+                <div class="quick-card" onclick="openModal('aiSet')">
+                    <div class="quick-icon" style="background:#fef3c7;color:#d97706">🤖</div>
+                    <div class="quick-label">AI Set Maker</div>
+                </div>
+            </div>
+
+            <!-- Sections -->
+            <div class="section-title">📂 Your Sections</div>
             <div id="homeSections"></div>
         </div>
     </div>
@@ -47,20 +82,24 @@
     <!-- ========== INVENTORY PAGE ========== -->
     <div id="inventoryPage" class="page">
         <div class="container">
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:15px 0;flex-wrap:wrap;gap:8px">
-                <h2 style="font-size:22px">📦 Inventory</h2>
-                <div style="display:flex;gap:8px;flex-wrap:wrap">
-                    <button onclick="openModal('addSection')" style="padding:8px 16px;background:#8b5cf6;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px">📁 + Section</button>
-                    <button onclick="openModal('addProduct')" style="padding:8px 16px;background:#3b82f6;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px">+ Product</button>
+            <div class="page-header">
+                <h2 class="page-title">📦 Inventory</h2>
+                <div class="header-buttons">
+                    <button onclick="openModal('addSection')" class="btn-secondary">📁</button>
+                    <button onclick="openModal('addProduct')" class="btn-primary">+ Add</button>
                 </div>
             </div>
-            
-            <div style="display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap">
-                <input id="searchInput" placeholder="🔍 Search products..." style="flex:1;min-width:150px;padding:10px 14px;border:2px solid #e5e7eb;border-radius:10px;font-size:14px">
-                <select id="filterSection" style="padding:10px;border:2px solid #e5e7eb;border-radius:10px;font-size:14px;flex:1;min-width:120px">
+
+            <!-- Search & Filters -->
+            <div class="search-container">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input id="searchInput" placeholder="Search products..." class="search-input">
+                </div>
+                <select id="filterSection" class="filter-select">
                     <option value="">All Sections</option>
                 </select>
-                <select id="filterColor" style="padding:10px;border:2px solid #e5e7eb;border-radius:10px;font-size:14px;flex:1;min-width:100px">
+                <select id="filterColor" class="filter-select">
                     <option value="">All Colors</option>
                     <option value="Red">🔴 Red</option>
                     <option value="Blue">🔵 Blue</option>
@@ -68,7 +107,6 @@
                     <option value="Green">🟢 Green</option>
                     <option value="Silver">⚪ Silver</option>
                     <option value="Pink">🩷 Pink</option>
-                    <option value="Purple">🟣 Purple</option>
                 </select>
             </div>
 
@@ -76,63 +114,69 @@
         </div>
     </div>
 
-    <!-- ========== AI SET MAKER PAGE ========== -->
+    <!-- ========== AI SET MAKER ========== -->
     <div id="aiSetPage" class="page">
         <div class="container">
-            <h2 style="font-size:22px;padding:15px 0">🤖 AI Set Maker</h2>
-            <p style="color:#6b7280;margin-bottom:15px">Create bangle sets from available inventory colors</p>
-            
+            <h2 class="page-title">🤖 AI Set Maker</h2>
+            <p class="page-subtitle">Create bangle sets from available inventory colors</p>
+
             <div class="card">
-                <h4 style="margin-bottom:10px">🎨 Available Colors</h4>
+                <h3 class="card-title">🎨 Available Colors</h3>
                 <div id="availableColors" class="color-palette"></div>
             </div>
 
-            <button onclick="generateAISets()" class="primary-btn" style="margin:15px 0;padding:12px">⚡ Generate AI Sets</button>
-            
+            <button onclick="generateAISets()" class="btn-gradient" style="width:100%;padding:16px;font-size:16px;margin:15px 0">
+                ⚡ Generate AI Sets
+            </button>
+
             <div id="generatedSets"></div>
         </div>
     </div>
 
-    <!-- ========== BILL/PARCHA PAGE ========== -->
+    <!-- ========== BILL PAGE ========== -->
     <div id="billPage" class="page">
         <div class="container">
-            <h2 style="font-size:22px;padding:15px 0">🧾 Parcha / Bill</h2>
-            
+            <h2 class="page-title">🧾 Parcha / Bill</h2>
+
             <div class="card">
                 <div class="form-group">
-                    <label>Customer Name</label>
-                    <input id="customerName" placeholder="Customer name (optional)">
+                    <label>👤 Customer Name</label>
+                    <input id="customerName" placeholder="Customer name (optional)" class="form-input">
                 </div>
                 <div class="form-group">
-                    <label>Customer Mobile</label>
-                    <input id="customerMobile" placeholder="Mobile (optional)">
+                    <label>📱 Customer Mobile</label>
+                    <input id="customerMobile" placeholder="Mobile (optional)" class="form-input">
                 </div>
             </div>
 
             <div class="card">
-                <div style="display:flex;gap:10px">
-                    <input id="billSearch" placeholder="🔍 Search or scan SKU" style="flex:1;padding:10px 14px;border:2px solid #e5e7eb;border-radius:10px;font-size:14px">
-                    <button onclick="scanBillProduct()" style="padding:10px 15px;background:#3b82f6;color:#fff;border:none;border-radius:10px;cursor:pointer">📷</button>
+                <div class="search-add">
+                    <input id="billSearch" placeholder="🔍 Search or scan SKU" class="form-input" style="flex:1">
+                    <button onclick="scanBillProduct()" class="btn-scan">📷</button>
                 </div>
                 <div id="billItems" style="margin-top:15px"></div>
-                
-                <div style="border-top:2px dashed #e5e7eb;padding-top:15px;margin-top:15px">
-                    <div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0">
-                        <span>Subtotal:</span><span id="billSubtotal">₹0</span>
+
+                <div class="bill-total">
+                    <div class="bill-row">
+                        <span>Subtotal</span>
+                        <span id="billSubtotal">₹0</span>
                     </div>
-                    <div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0">
-                        <span>Discount (₹):</span>
-                        <input id="billDiscount" type="number" value="0" style="width:80px;padding:4px 8px;border:2px solid #e5e7eb;border-radius:6px;text-align:right" oninput="calculateBillTotal()">
+                    <div class="bill-row">
+                        <span>Discount (₹)</span>
+                        <input id="billDiscount" type="number" value="0" class="discount-input" oninput="calculateBillTotal()">
                     </div>
-                    <div style="display:flex;justify-content:space-between;font-size:18px;font-weight:700;padding:10px 0;border-top:2px solid #e5e7eb;margin-top:10px">
-                        <span>Total:</span><span id="billTotal">₹0</span>
+                    <div class="bill-grand-total">
+                        <span>Total</span>
+                        <span id="billTotal">₹0</span>
                     </div>
                 </div>
-                
-                <button onclick="saveBill()" class="primary-btn" style="margin-top:15px">💾 Save Bill</button>
+
+                <button onclick="saveBill()" class="btn-success" style="width:100%;padding:14px;font-size:16px;margin-top:15px">
+                    💾 Save Bill
+                </button>
             </div>
 
-            <h3 style="margin:15px 0 10px;font-size:16px">📜 Bill History</h3>
+            <div class="section-title">📜 Bill History</div>
             <div id="billHistory"></div>
         </div>
     </div>
@@ -140,25 +184,31 @@
     <!-- ========== MORE PAGE ========== -->
     <div id="morePage" class="page">
         <div class="container">
-            <h2 style="font-size:22px;padding:15px 0">⚙️ More Options</h2>
-            
+            <h2 class="page-title">⚙️ Settings</h2>
+
             <div class="card">
-                <div style="padding:12px 0;border-bottom:1px solid #f3f4f6;cursor:pointer" onclick="exportData()">
-                    <span style="font-size:16px">📤 Export Data</span>
-                    <p style="font-size:12px;color:#6b7280">Export all products & bills</p>
+                <div class="menu-item" onclick="exportData()">
+                    <span>📤 Export Data</span>
+                    <span style="color:#9ca3af">→</span>
                 </div>
-                <div style="padding:12px 0;border-bottom:1px solid #f3f4f6;cursor:pointer" onclick="importData()">
-                    <span style="font-size:16px">📥 Import Data</span>
-                    <p style="font-size:12px;color:#6b7280">Import from backup file</p>
+                <div class="menu-item" onclick="importData()">
+                    <span>📥 Import Data</span>
+                    <span style="color:#9ca3af">→</span>
                 </div>
-                <div style="padding:12px 0;border-bottom:1px solid #f3f4f6;cursor:pointer" onclick="clearAllData()">
-                    <span style="font-size:16px;color:#ef4444">🗑️ Clear All Data</span>
-                    <p style="font-size:12px;color:#ef4444">Delete everything</p>
+                <div class="menu-item" onclick="clearAllData()">
+                    <span style="color:#ef4444">🗑️ Clear All Data</span>
+                    <span style="color:#9ca3af">→</span>
                 </div>
-                <div style="padding:12px 0;cursor:pointer" onclick="aboutApp()">
-                    <span style="font-size:16px">ℹ️ About</span>
-                    <p style="font-size:12px;color:#6b7280">Smart Inventory v2.0 - 100% Real</p>
+                <div class="menu-item" onclick="aboutApp()">
+                    <span>ℹ️ About</span>
+                    <span style="color:#9ca3af">→</span>
                 </div>
+            </div>
+
+            <div class="card" style="text-align:center;padding:30px">
+                <div style="font-size:48px;margin-bottom:10px">📱</div>
+                <h3 style="margin-bottom:5px">Smart Inventory v2.0</h3>
+                <p style="color:#6b7280;font-size:13px">100% Real - No Login Required</p>
             </div>
         </div>
     </div>
@@ -167,24 +217,24 @@
 <!-- ============ BOTTOM NAVIGATION ============ -->
 <div class="bottom-nav">
     <div class="nav-item active" onclick="switchPage('home')">
-        <span class="icon">🏠</span>
-        <span class="label">Home</span>
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">Home</span>
     </div>
     <div class="nav-item" onclick="switchPage('inventory')">
-        <span class="icon">📦</span>
-        <span class="label">Inventory</span>
+        <span class="nav-icon">📦</span>
+        <span class="nav-label">Inventory</span>
     </div>
     <div class="nav-item" onclick="switchPage('aiSet')">
-        <span class="icon">🤖</span>
-        <span class="label">AI Set</span>
+        <span class="nav-icon">🤖</span>
+        <span class="nav-label">AI Set</span>
     </div>
     <div class="nav-item" onclick="switchPage('bill')">
-        <span class="icon">🧾</span>
-        <span class="label">Parcha</span>
+        <span class="nav-icon">🧾</span>
+        <span class="nav-label">Parcha</span>
     </div>
     <div class="nav-item" onclick="switchPage('more')">
-        <span class="icon">⋮</span>
-        <span class="label">More</span>
+        <span class="nav-icon">⚙️</span>
+        <span class="nav-label">More</span>
     </div>
 </div>
 
