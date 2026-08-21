@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bangle Store AI</title>
+    <meta name="theme-color" content="#1a1a2e">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f6fa; padding-bottom: 80px; }
+        #app { max-width: 480px; margin: 0 auto; background: #f5f6fa; min-height: 100vh; }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: white; border-bottom: 1px solid #dfe6e9; }
+        .header h1 { font-size: 18px; color: #1a1a2e; }
+        .header p { font-size: 10px; color: #636e72; }
+        .settings-btn { background: none; border: none; font-size: 20px; cursor: pointer; }
+        .search-container { padding: 12px 16px; background: white; border-bottom: 1px solid #dfe6e9; }
+        .search-container input { width: 100%; padding: 10px 16px; border: 2px solid #dfe6e9; border-radius: 12px; font-size: 14px; background: white; outline: none; }
+        .search-container input:focus { border-color: #e94560; }
+        .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 16px; }
+        .action-card { background: white; padding: 16px; border-radius: 16px; border: 1px solid #dfe6e9; text-align: center; cursor: pointer; transition: transform 0.2s; }
+        .action-card:active { transform: scale(0.96); }
+        .action-icon { font-size: 28px; margin-bottom: 6px; }
+        .action-card h3 { font-size: 13px; font-weight: 600; }
+        .action-card p { font-size: 10px; color: #636e72; }
+        .inventory-overview { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; padding: 0 16px 16px; }
+        .stat-card { background: white; padding: 12px 8px; border-radius: 12px; text-align: center; border: 1px solid #dfe6e9; cursor: pointer; }
+        .stat-number { display: block; font-size: 20px; font-weight: 700; color: #1a1a2e; }
+        .stat-label { font-size: 9px; color: #636e72; }
+        .stat-card.warning .stat-number { color: #f39c12; }
+        .stat-card.danger .stat-number { color: #e74c3c; }
+        .section-list { padding: 0 16px 16px; }
+        .section-item { background: white; padding: 12px 16px; border-radius: 12px; border: 1px solid #dfe6e9; margin-bottom: 8px; display: flex; justify-content: space-between; cursor: pointer; }
+        .recent-products { padding: 0 16px 16px; }
+        .recent-item { background: white; padding: 10px 16px; border-radius: 12px; border: 1px solid #dfe6e9; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; cursor: pointer; }
+        .recent-item .info { flex: 1; }
+        .recent-item .info .name { font-size: 14px; font-weight: 500; }
+        .recent-item .info .details { font-size: 11px; color: #636e72; }
+        .screen { display: none; }
+        .screen.active { display: block; }
+        #bottomNav { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #dfe6e9; display: flex; justify-content: space-around; padding: 6px 0; z-index: 1000; max-width: 480px; margin: 0 auto; }
+        .nav-btn { background: none; border: none; display: flex; flex-direction: column; align-items: center; padding: 4px 16px; cursor: pointer; color: #636e72; }
+        .nav-btn.active { color: #e94560; }
+        .nav-btn span { font-size: 22px; }
+        .nav-btn label { font-size: 9px; margin-top: 2px; }
+        .form-group { margin-bottom: 14px; padding: 0 16px; }
+        .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 12px; border: 1px solid #dfe6e9; border-radius: 8px; font-size: 14px; background: white; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 16px; }
+        .save-btn { width: calc(100% - 32px); margin: 0 16px 16px; padding: 14px; background: #e94560; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; }
+        .empty-card { padding: 20px; text-align: center; color: #636e72; font-size: 13px; background: white; border-radius: 12px; border: 1px dashed #dfe6e9; margin: 16px; }
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; padding: 20px; }
+        .modal.show { display: flex; }
+        .modal-content { background: white; border-radius: 16px; max-width: 400px; width: 100%; max-height: 80vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #dfe6e9; }
+        .modal-close { background: none; border: none; font-size: 20px; cursor: pointer; }
+        #modalBody { padding: 16px 20px 20px; }
+        .product-card { background: white; border-radius: 12px; padding: 12px; border: 1px solid #dfe6e9; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; }
+        .product-card img { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; background: #dfe6e9; }
+        .product-card .info { flex: 1; }
+        .product-card .info .name { font-size: 14px; font-weight: 600; }
+        .product-card .info .details { font-size: 11px; color: #636e72; }
+        .product-card .actions { display: flex; gap: 6px; }
+        .product-card .actions button { padding: 4px 10px; border: none; border-radius: 6px; font-size: 11px; cursor: pointer; font-weight: 500; }
+        .edit-btn { background: #e8f0fe; color: #1a73e8; }
+        .stock-in-btn { background: #e8f5e9; color: #2e7d32; }
+        .stock-out-btn { background: #fbe9e7; color: #c62828; }
+        .delete-btn { background: #ffebee; color: #c62828; }
+        .sale-item { display: flex; align-items: center; gap: 10px; background: white; padding: 10px 12px; border-radius: 10px; border: 1px solid #dfe6e9; margin-bottom: 6px; }
+        .sale-item .details { flex: 1; }
+        .sale-item .qty-control { display: flex; align-items: center; gap: 6px; }
+        .sale-item .qty-control button { width: 28px; height: 28px; border: 1px solid #dfe6e9; border-radius: 50%; background: white; font-size: 16px; cursor: pointer; }
+        .sale-item .qty-control span { font-weight: 600; min-width: 24px; text-align: center; }
+        .sale-item .price { font-weight: 600; font-size: 14px; min-width: 60px; text-align: right; }
+        .sale-item .remove-btn { background: none; border: none; color: #e74c3c; font-size: 18px; cursor: pointer; }
+        .sale-summary { background: white; border-radius: 12px; padding: 16px; border: 1px solid #dfe6e9; margin: 12px 16px; }
+        .sale-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 14px; }
+        .sale-row.total { font-size: 18px; font-weight: 700; border-top: 2px solid #dfe6e9; padding-top: 8px; margin-top: 4px; }
+        .sale-customer { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 16px; margin: 12px 0; }
+        .sale-customer input { padding: 8px 12px; border: 1px solid #dfe6e9; border-radius: 8px; font-size: 13px; }
+        .sale-payment { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 0 16px; margin: 12px 0; }
+        .payment-btn { padding: 10px; border: 2px solid #dfe6e9; border-radius: 8px; background: white; font-size: 12px; font-weight: 500; cursor: pointer; }
+        .payment-btn.active { border-color: #e94560; background: #fce4ec; }
+        .bill-btn { width: calc(100% - 32px); margin: 12px 16px; padding: 16px; background: #2ecc71; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; }
+        .more-menu { background: white; border-radius: 12px; border: 1px solid #dfe6e9; margin: 16px; overflow: hidden; }
+        .more-item { display: flex; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid #dfe6e9; cursor: pointer; }
+        .more-item:last-child { border-bottom: none; }
+        .image-upload { background: white; border: 2px dashed #dfe6e9; border-radius: 12px; padding: 24px; text-align: center; cursor: pointer; margin: 0 16px 16px; }
+        .image-upload span { font-size: 36px; display: block; }
+        .image-upload p { font-size: 12px; color: #636e72; margin-top: 4px; }
+        .image-upload img { max-width: 100%; max-height: 150px; border-radius: 8px; }
+        .upload-area { background: white; border: 2px dashed #dfe6e9; border-radius: 12px; padding: 40px 20px; text-align: center; cursor: pointer; margin: 0 16px 16px; }
+        .upload-area span { font-size: 48px; display: block; }
+        .colour-match { background: white; border-radius: 12px; padding: 16px; border: 1px solid #dfe6e9; margin: 0 16px 16px; }
+        .match-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #dfe6e9; font-size: 13px; }
+        .match-item:last-child { border-bottom: none; }
+        .bulk-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 16px; }
+        .bulk-card { background: white; padding: 20px; border-radius: 12px; text-align: center; border: 1px solid #dfe6e9; cursor: pointer; }
+        .bulk-icon { font-size: 32px; }
+        .sale-search { display: flex; gap: 8px; padding: 0 16px; margin-bottom: 12px; }
+        .sale-search input { flex: 1; padding: 10px 14px; border: 1px solid #dfe6e9; border-radius: 8px; font-size: 14px; }
+        .scan-btn { padding: 10px 16px; background: #1a1a2e; color: white; border: none; border-radius: 8px; font-size: 18px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div class="header">
+        <div>
+            <h1>🏪 Bangle Store AI</h1>
+            <p>Smart Inventory • Smarter Business</p>
+        </div>
+        <button class="settings-btn" onclick="showSettings()">⚙️</button>
+    </div>
+
+    <div id="homeScreen" class="screen active">
+        <div class="search-container">
+            <input type="text" id="homeSearch" placeholder="🔍 Search product, colour or SKU..." oninput="searchProducts(this.value)">
+        </div>
+
+        <div class="quick-actions">
+            <div class="action-card" onclick="showAISetMaker()"><div class="action-icon">✨</div><h3>AI Set Maker</h3><p>Match colour & stock</p></div>
+            <div class="action-card" onclick="showBulkAdd()"><div class="action-icon">📚</div><h3>Bulk Add</h3><p>AI/File/QR</p></div>
+            <div class="action-card" onclick="showAddProduct()"><div class="action-icon">➕</div><h3>Add Product</h3><p>Manual entry</p></div>
+            <div class="action-card" onclick="showNewSale()"><div class="action-icon">🧾</div><h3>New Sale</h3><p>Billing</p></div>
+        </div>
+
+        <div class="inventory-overview">
+            <div class="stat-card" onclick="showInventory()"><span class="stat-number" id="totalProducts">0</span><span class="stat-label">📦 Products</span></div>
+            <div class="stat-card" onclick="showInventory()"><span class="stat-number" id="totalSections">0</span><span class="stat-label">🗂️ Sections</span></div>
+            <div class="stat-card warning" onclick="showInventory()"><span class="stat-number" id="lowStockCount">0</span><span class="stat-label">⚠️ Low Stock</span></div>
+            <div class="stat-card danger" onclick="showInventory()"><span class="stat-number" id="outOfStockCount">0</span><span class="stat-label">🚫 Out Stock</span></div>
+        </div>
+
+        <div class="section-list">
+            <h3 style="padding:0 0 12px 0;">📦 Inventory Sections</h3>
+            <div id="sectionList"></div>
+        </div>
+
+        <div class="recent-products">
+            <h3 style="padding:0 0 12px 0;">🕐 Recent Products</h3>
+            <div id="recentProducts"></div>
+        </div>
+    </div>
+
+    <!-- INVENTORY SCREEN -->
+    <div id="inventoryScreen" class="screen">
+        <div class="header"><button onclick="showHome()" style="background:none;border:none;font-size:20px;">←</button><h2>📦 Inventory</h2><button onclick="showAddProduct()" style="background:none;border:none;font-size:20px;">➕</button></div>
+        <div id="inventoryList"><div class="empty-card">No products added yet</div></div>
+    </div>
+
+    <!-- AI SET MAKER -->
+    <div id="aiSetMakerScreen" class="screen">
+        <div class="header"><button onclick="showHome()" style="background:none;border:none;font-size:20px;">←</button><h2>✨ AI Set Maker</h2></div>
+        <div class="upload-area" onclick="document.getElementById('sareeImage').click()">
+            <div id="imagePreview"><span>📷</span><p>Tap to select saree image</p></div>
+            <input type="file" id="sareeImage" accept="image/*" capture="environment" onchange="detectRealAIColour(this)" style="display:none;">
+        </div>
+        <div id="colourResult"></div>
+        <div id="suggestedSet"></div>
+    </div>
+
+    <!-- BULK ADD -->
+    <div id="bulkAddScreen" class="screen">
+        <div class="header"><button onclick="showHome()" style="background:none;border:none;font-size:20px;">←</button><h2>📚 Bulk Add</h2></div>
+        <div class="bulk-options">
+            <div class="bulk-card" onclick="showRealAIImport()"><div class="bulk-icon">🖼️</div><h3>AI Image/File Import</h3></div>
+            <div class="bulk-card" onclick="openRealScanner()"><div class="bulk-icon">📷</div><h3>Scan & Add</h3></div>
+        </div>
+    </div>
+
+    <!-- ADD PRODUCT -->
+    <div id="addProductScreen" class="screen">
+        <div class="header"><button onclick="showHome()" style="background:none;border:none;font-size:20px;">←</button><h2>➕ Add Product</h2></div>
+        <form id="productForm" onsubmit="saveProduct(event)">
+            <div class="image-upload" onclick="document.getElementById('productImage').click()">
+                <div id="productImagePreview"><span>📷</span><p>Tap to add image</p></div>
+                <input type="file" id="productImage" accept="image/*" capture="environment" onchange="previewProductImage(this)" style="display:none;">
+            </div>
+            <div class="form-group"><label>Product Name *</label><input type="text" id="productName" required></div>
+            <div class="form-row"><div class="form-group"><label>Colour *</label><input type="text" id="productColour" required placeholder="e.g., Rani Pink"></div>
+            <div class="form-group"><label>Size *</label><input type="text" id="productSize" required placeholder="e.g., 2.4"></div></div>
+            <div class="form-row"><div class="form-group"><label>SKU *</label><input type="text" id="productSKU" required placeholder="e.g., VB-RANI-24"></div>
+            <div class="form-group"><label>Quantity *</label><input type="number" id="productQuantity" required min="0"></div></div>
+            <div class="form-row"><div class="form-group"><label>Purchase Price (₹)</label><input type="number" id="productPurchasePrice" step="0.01"></div>
+            <div class="form-group"><label>Selling Price (₹) *</label><input type="number" id="productSellingPrice" required step="0.01"></div></div>
+            <div class="form-group"><label>Section *</label><select id="productSection" required><option value="">Select Section</option></select></div>
+            <div class="form-group"><label>Notes</label><textarea id="productNotes" rows="2"></textarea></div>
+            <button type="submit" class="save-btn">💾 Save Product</button>
+        </form>
+    </div>
+
+    <!-- NEW SALE -->
+    <div id="newSaleScreen" class="screen">
+        <div class="header"><button onclick="showHome()" style="background:none;border:none;font-size:20px;">←</button><h2>🧾 New Sale</h2><button onclick="resetSale()" style="background:none;border:none;font-size:20px;">🔄</button></div>
+        <div class="sale-search"><input type="text" id="saleSearch" placeholder="🔍 Search or scan SKU..." oninput="searchSaleProducts(this.value)"><button onclick="openScannerFromSale()" class="scan-btn">📷</button></div>
+        <div id="saleProducts"><div class="empty-card">Add products to sale</div></div>
+        <div class="sale-summary"><div class="sale-row"><span>Subtotal:</span><span id="subtotal">₹0</span></div><div class="sale-row"><span>Discount:</span><input type="number" id="saleDiscount" value="0" min="0" oninput="updateTotal()" style="width:80px;padding:4px 8px;border:1px solid #dfe6e9;border-radius:6px;text-align:right;"></div><div class="sale-row total"><span>TOTAL:</span><span id="totalAmount">₹0</span></div></div>
+        <div class="sale-customer"><input type="text" id="customerName" placeholder="Customer Name"><input type="text" id="customerPhone" placeholder="Phone Number"></div>
+        <div class="sale-payment"><button onclick="setPayment('Cash')" class="payment-btn">💰 Cash</button><button onclick="setPayment('UPI')" class="payment-btn">📱 UPI</button><button onclick="setPayment('Card')" class="payment-btn">💳 Card</button></div>
+        <button onclick="generateBill()" class="bill-btn">🧾 Generate Bill</button>
+    </div>
+
+    <!-- MORE -->
+    <div id="moreScreen" class="screen">
+        <div class="header"><button onclick="showHome()" style="background:none;border:none;font-size:20px;">←</button><h2>☰ More</h2></div>
+        <div class="more-menu"><div class="more-item" onclick="showBills()"><span>📋 Bills</span><span>›</span></div><div class="more-item" onclick="showReports()"><span>📊 Reports</span><span>›</span></div><div class="more-item" onclick="showDailyParcha()"><span>📝 Daily Parcha</span><span>›</span></div><div class="more-item" onclick="showSettings()"><span>⚙️ Settings</span><span>›</span></div></div>
+    </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav id="bottomNav">
+    <button class="nav-btn active" data-screen="homeScreen" onclick="navigateTo('homeScreen')"><span>🏠</span><label>Home</label></button>
+    <button class="nav-btn" data-screen="inventoryScreen" onclick="navigateTo('inventoryScreen')"><span>📦</span><label>Inventory</label></button>
+    <button class="nav-btn" data-screen="aiSetMakerScreen" onclick="navigateTo('aiSetMakerScreen')"><span>✨</span><label>AI</label></button>
+    <button class="nav-btn" data-screen="newSaleScreen" onclick="navigateTo('newSaleScreen')"><span>🧾</span><label>Sale</label></button>
+    <button class="nav-btn" data-screen="moreScreen" onclick="navigateTo('moreScreen')"><span>☰</span><label>More</label></button>
+</nav>
+
+<!-- MODAL -->
+<div id="modal" class="modal"><div class="modal-content"><div class="modal-header"><h3 id="modalTitle">Modal</h3><button class="modal-close" onclick="closeModal()">✕</button></div><div id="modalBody"></div></div></div>
+
+<script src="app.js"></script>
+</body>
+</html>
