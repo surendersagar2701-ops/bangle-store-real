@@ -1,104 +1,16 @@
 /* ========================================
-   SMART INVENTORY APP v2.0 - WITH SECTIONS
-   Firebase Ready
+   SMART INVENTORY APP v2.0 - 100% REAL
+   No Login, No OTP, No Firebase
    ======================================== */
-
-// ===== FIREBASE CONFIG =====
-const firebaseConfig = {
-    apiKey: "AIzaSyCaqe-u5VHqZlxvJ0Zq3aWi9R93m-B93JM",
-    authDomain: "smart-inventory-app.firebaseapp.com",
-    projectId: "smart-inventory-app",
-    storageBucket: "smart-inventory-app.appspot.com",
-    messagingSenderId: "123456789012",
-    appId: "1:123456789012:web:abcdef123456"
-};
-
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
 
 // ===== DATA STORE =====
 let products = JSON.parse(localStorage.getItem('products')) || [];
 let sections = JSON.parse(localStorage.getItem('sections')) || [];
 let bills = JSON.parse(localStorage.getItem('bills')) || [];
-let currentUser = localStorage.getItem('userPhone') || '';
 let currentBill = [];
 
 // ==========================================
-// 1. LOGIN SYSTEM
-// ==========================================
-
-function sendOTP() {
-    const phone = document.getElementById('phoneNumber').value.trim();
-    if (phone.length < 10) {
-        alert('Please enter a valid mobile number (10+ digits).');
-        return;
-    }
-    currentUser = phone;
-    document.getElementById('phoneStep').classList.add('hidden');
-    document.getElementById('otpStep').classList.remove('hidden');
-    alert('📱 Demo OTP: 123456\n\n(Real OTP would be sent via Firebase)');
-}
-
-function verifyOTP() {
-    const otp = document.getElementById('otpInput').value.trim();
-    if (otp !== '123456') {
-        alert('❌ Invalid OTP. Use: 123456');
-        return;
-    }
-    document.getElementById('otpStep').classList.add('hidden');
-    document.getElementById('gmailStep').classList.remove('hidden');
-}
-
-function verifyGmail() {
-    const email = document.getElementById('gmailInput').value.trim();
-    if (!email.includes('@') || !email.includes('.')) {
-        alert('Please enter a valid Gmail address.');
-        return;
-    }
-    
-    localStorage.setItem('userPhone', currentUser);
-    localStorage.setItem('userEmail', email);
-    
-    // Firebase Auth - Anonymous (for demo)
-    auth.signInAnonymously()
-        .then(() => {
-            console.log('✅ Firebase Auth: Anonymous login success');
-        })
-        .catch(err => {
-            console.log('⚠️ Firebase Auth error:', err.message);
-        });
-    
-    // Show Main App
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('mainApp').classList.remove('hidden');
-    document.getElementById('bottomNav').classList.remove('hidden');
-    document.getElementById('userDisplay').textContent = currentUser;
-    
-    updateUI();
-    alert('✅ Welcome to Smart Inventory!\n\nPhone: ' + currentUser + '\nEmail: ' + email);
-}
-
-function logout() {
-    if (!confirm('Are you sure you want to logout?')) return;
-    
-    // Firebase sign out
-    auth.signOut().catch(err => console.log(err));
-    
-    document.getElementById('loginScreen').style.display = 'flex';
-    document.getElementById('mainApp').classList.add('hidden');
-    document.getElementById('bottomNav').classList.add('hidden');
-    document.getElementById('phoneStep').classList.remove('hidden');
-    document.getElementById('otpStep').classList.add('hidden');
-    document.getElementById('gmailStep').classList.add('hidden');
-    document.getElementById('phoneNumber').value = '';
-    document.getElementById('otpInput').value = '';
-    document.getElementById('gmailInput').value = '';
-}
-
-// ==========================================
-// 2. NAVIGATION
+// 1. NAVIGATION
 // ==========================================
 
 function switchPage(page) {
@@ -107,7 +19,6 @@ function switchPage(page) {
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     document.querySelector(`.nav-item[onclick="switchPage('${page}')"]`).classList.add('active');
     
-    // Refresh data on page switch
     if (page === 'inventory') renderInventory();
     if (page === 'aiSet') updateColorPalette();
     if (page === 'home') updateUI();
@@ -115,7 +26,7 @@ function switchPage(page) {
 }
 
 // ==========================================
-// 3. MODAL SYSTEM
+// 2. MODAL SYSTEM
 // ==========================================
 
 function openModal(type) {
@@ -229,7 +140,6 @@ function openModal(type) {
     content.innerHTML = html;
     modal.classList.add('show');
     
-    // Refresh color palette if AI Set modal
     if (type === 'aiSet') {
         renderModalColorPalette();
     }
@@ -240,7 +150,7 @@ function closeModal() {
 }
 
 // ==========================================
-// 4. SECTIONS MANAGEMENT
+// 3. SECTIONS MANAGEMENT
 // ==========================================
 
 function addSection() {
@@ -263,7 +173,6 @@ function addSection() {
 function deleteSection(id) {
     if (!confirm('Delete this section and all products in it?')) return;
     
-    // Remove products in this section
     products = products.filter(p => p.sectionId !== id);
     sections = sections.filter(s => s.id !== id);
     
@@ -274,7 +183,7 @@ function deleteSection(id) {
 }
 
 // ==========================================
-// 5. PRODUCTS MANAGEMENT
+// 4. PRODUCTS MANAGEMENT
 // ==========================================
 
 function addProduct() {
@@ -291,7 +200,6 @@ function addProduct() {
     if (!name) { alert('Please enter product name'); return; }
     if (!sku) { alert('Please enter SKU'); return; }
     
-    // Check duplicate SKU
     if (products.some(p => p.sku === sku)) {
         alert('❌ SKU already exists! Use a unique SKU.');
         return;
@@ -402,7 +310,7 @@ function deleteProduct(id) {
 }
 
 // ==========================================
-// 6. BULK ADD
+// 5. BULK ADD
 // ==========================================
 
 function bulkAdd() {
@@ -457,7 +365,7 @@ function bulkAdd() {
 }
 
 // ==========================================
-// 7. AI SET MAKER
+// 6. AI SET MAKER
 // ==========================================
 
 function renderModalColorPalette() {
@@ -502,7 +410,6 @@ function generateAISetsModal() {
     }
     
     const sets = [];
-    // 2-color combos
     for (let i = 0; i < colorNames.length; i++) {
         for (let j = i+1; j < colorNames.length; j++) {
             const minQty = Math.min(colors[colorNames[i]], colors[colorNames[j]]);
@@ -515,7 +422,6 @@ function generateAISetsModal() {
             }
         }
     }
-    // 3-color combos
     for (let i = 0; i < colorNames.length; i++) {
         for (let j = i+1; j < colorNames.length; j++) {
             for (let k = j+1; k < colorNames.length; k++) {
@@ -566,7 +472,6 @@ function addSetToInventory(idx) {
     const set = window._generatedSets[idx];
     if (!set) return;
     
-    // Find or create a section for sets
     let setSection = sections.find(s => s.name === 'AI Sets');
     if (!setSection) {
         setSection = {
@@ -599,8 +504,14 @@ function addSetToInventory(idx) {
     alert(`✅ Added "${product.name}" (${set.maxSets} sets)`);
 }
 
+function generateAISets() {
+    updateColorPalette();
+    alert('Go to AI Set Maker page or click "Generate Sets" in modal!');
+    switchPage('aiSet');
+}
+
 // ==========================================
-// 8. INVENTORY RENDER
+// 7. INVENTORY RENDER
 // ==========================================
 
 function renderInventory() {
@@ -609,7 +520,6 @@ function renderInventory() {
     const filterSection = document.getElementById('filterSection')?.value || '';
     const filterColor = document.getElementById('filterColor')?.value || '';
     
-    // Update section filter dropdown
     const filterSelect = document.getElementById('filterSection');
     if (filterSelect) {
         const currentVal = filterSelect.value;
@@ -618,7 +528,6 @@ function renderInventory() {
         filterSelect.value = currentVal;
     }
     
-    // Filter products
     let filtered = products;
     if (search) filtered = filtered.filter(p => 
         p.name?.toLowerCase().includes(search) || 
@@ -654,7 +563,6 @@ function renderInventory() {
             `;
             return;
         }
-        
         if (sectionProducts.length === 0) return;
         
         html += `
@@ -689,7 +597,7 @@ function renderInventory() {
 }
 
 // ==========================================
-// 9. BILL SYSTEM
+// 8. BILL SYSTEM
 // ==========================================
 
 function scanBillProduct() {
@@ -768,7 +676,6 @@ function saveBill() {
         total: total
     };
     
-    // Deduct stock
     currentBill.forEach(item => {
         const p = products.find(pr => pr.id === item.id);
         if (p) p.stock = (p.stock || 0) - item.qty;
@@ -816,32 +723,25 @@ function viewBill(id) {
     const bill = bills.find(b => b.id === id);
     if (!bill) return;
     
-    let itemsHtml = bill.items.map(i => 
-        `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f3f4f6;font-size:13px">
-            <span>${i.name} × ${i.qty}</span>
-            <span>₹${i.subtotal}</span>
-        </div>`
-    ).join('');
-    
     alert(
-        `🧾 BILL DETAILS\n` +
-        `━━━━━━━━━━━━━━━━━━━━━━\n` +
-        `Bill: ${bill.id}\n` +
-        `Date: ${bill.date}\n` +
-        `Customer: ${bill.customer}\n` +
-        `Mobile: ${bill.mobile || 'N/A'}\n` +
-        `━━━━━━━━━━━━━━━━━━━━━━\n` +
-        `Items:\n${bill.items.map(i => `  ${i.name} × ${i.qty} = ₹${i.subtotal}`).join('\n')}\n` +
-        `━━━━━━━━━━━━━━━━━━━━━━\n` +
-        `Subtotal: ₹${bill.subtotal}\n` +
-        `Discount: ₹${bill.discount}\n` +
-        `TOTAL: ₹${bill.total}\n` +
-        `━━━━━━━━━━━━━━━━━━━━━━`
+        '🧾 BILL DETAILS\n' +
+        '━━━━━━━━━━━━━━━━━━━━━━\n' +
+        'Bill: ' + bill.id + '\n' +
+        'Date: ' + bill.date + '\n' +
+        'Customer: ' + bill.customer + '\n' +
+        'Mobile: ' + (bill.mobile || 'N/A') + '\n' +
+        '━━━━━━━━━━━━━━━━━━━━━━\n' +
+        'Items:\n' + bill.items.map(i => '  ' + i.name + ' × ' + i.qty + ' = ₹' + i.subtotal).join('\n') + '\n' +
+        '━━━━━━━━━━━━━━━━━━━━━━\n' +
+        'Subtotal: ₹' + bill.subtotal + '\n' +
+        'Discount: ₹' + bill.discount + '\n' +
+        'TOTAL: ₹' + bill.total + '\n' +
+        '━━━━━━━━━━━━━━━━━━━━━━'
     );
 }
 
 // ==========================================
-// 10. UPDATE UI
+// 9. UPDATE UI
 // ==========================================
 
 function updateUI() {
@@ -904,14 +804,8 @@ function updateColorPalette() {
     `).join('');
 }
 
-function generateAISets() {
-    updateColorPalette();
-    alert('Go to AI Set Maker page or click "Generate Sets" in modal!');
-    switchPage('aiSet');
-}
-
 // ==========================================
-// 11. MORE OPTIONS
+// 10. MORE OPTIONS
 // ==========================================
 
 function exportData() {
@@ -985,33 +879,22 @@ function aboutApp() {
     alert(
         '📱 Smart Inventory v2.0\n' +
         '━━━━━━━━━━━━━━━━━━━━━━\n' +
+        '✅ 100% REAL - No Demo Features\n' +
         '✅ Sections Management\n' +
         '✅ Products by Section\n' +
         '✅ AI Set Maker\n' +
         '✅ Billing System\n' +
-        '✅ Firebase Ready\n' +
         '✅ Local Storage\n' +
+        '✅ Export/Import\n' +
         '━━━━━━━━━━━━━━━━━━━━━━\n' +
-        '🔑 Firebase API Key Added\n' +
-        '📧 jatinsagar319@gmail.com'
+        '🚀 No Login Required\n' +
+        '📱 Open and Use Directly'
     );
 }
 
 // ==========================================
-// 12. INITIALIZATION
+// 11. INITIALIZATION
 // ==========================================
-
-// Check if user is already logged in
-if (localStorage.getItem('userPhone')) {
-    currentUser = localStorage.getItem('userPhone');
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('mainApp').classList.remove('hidden');
-    document.getElementById('bottomNav').classList.remove('hidden');
-    document.getElementById('userDisplay').textContent = currentUser;
-    updateUI();
-} else {
-    document.getElementById('loginScreen').style.display = 'flex';
-}
 
 // Search and filter listeners
 document.addEventListener('DOMContentLoaded', function() {
@@ -1031,8 +914,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-console.log('✅ Smart Inventory v2.0 Loaded');
-console.log('🔑 Firebase API Key: AIzaSyCaqe-u5VHqZlxvJ0Zq3aWi9R93m-B93JM');
+// Load initial data
+updateUI();
+
+console.log('✅ Smart Inventory v2.0 - 100% REAL');
 console.log('📦 Sections:', sections.length);
 console.log('📦 Products:', products.length);
 console.log('🧾 Bills:', bills.length);
+console.log('🚀 No Login - Direct Access!');
