@@ -5,47 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Smart Inventory</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
-<!-- ============ LOGIN SCREEN ============ -->
-<div id="loginScreen" class="screen">
-    <div class="login-box">
-        <div class="logo">SI</div>
-        <h1>Smart Inventory</h1>
-        <p class="subtitle">Manage your inventory smarter</p>
-        
-        <div id="phoneStep">
-            <label>📱 Mobile Number</label>
-            <input id="phoneNumber" type="tel" placeholder="+91 9876543210">
-            <button onclick="sendOTP()" class="primary-btn">Send OTP</button>
-        </div>
-        
-        <div id="otpStep" class="hidden">
-            <div class="otp-box">
-                <label>🔐 Enter OTP</label>
-                <input id="otpInput" type="number" placeholder="Enter OTP">
-                <button onclick="verifyOTP()" class="primary-btn">Verify OTP</button>
-                <p style="margin-top:10px;font-size:12px;color:#6b7280">Demo OTP: <strong>123456</strong></p>
-            </div>
-        </div>
-
-        <div id="gmailStep" class="hidden">
-            <div class="otp-box">
-                <label>📧 Link Gmail Account</label>
-                <input id="gmailInput" type="email" placeholder="your@gmail.com">
-                <button onclick="verifyGmail()" class="primary-btn">Link Gmail</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ============ MAIN APP ============ -->
-<div id="mainApp" class="hidden" style="padding-bottom:70px;background:#f5f7fb;min-height:100vh">
+<!-- ============ MAIN APP (Direct Access) ============ -->
+<div id="mainApp" style="padding-bottom:70px;background:#f5f7fb;min-height:100vh">
 
     <!-- ========== HOME PAGE ========== -->
     <div id="homePage" class="page active">
@@ -53,9 +17,12 @@
             <div style="display:flex;justify-content:space-between;align-items:center;padding:15px 0">
                 <div>
                     <h2 style="font-size:22px">🏠 Dashboard</h2>
-                    <p style="color:#6b7280;font-size:13px">Welcome, <span id="userDisplay">User</span></p>
+                    <p style="color:#6b7280;font-size:13px">Welcome to Smart Inventory</p>
                 </div>
-                <button onclick="logout()" style="padding:8px 16px;background:#ef4444;color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer">Logout</button>
+                <div style="display:flex;gap:8px">
+                    <button onclick="exportData()" style="padding:6px 12px;background:#22c55e;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer">📤</button>
+                    <button onclick="clearAllData()" style="padding:6px 12px;background:#ef4444;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer">🗑️</button>
+                </div>
             </div>
             
             <div class="stats">
@@ -80,10 +47,12 @@
     <!-- ========== INVENTORY PAGE ========== -->
     <div id="inventoryPage" class="page">
         <div class="container">
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:15px 0">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:15px 0;flex-wrap:wrap;gap:8px">
                 <h2 style="font-size:22px">📦 Inventory</h2>
-                <button onclick="openModal('addSection')" style="padding:8px 16px;background:#8b5cf6;color:#fff;border:none;border-radius:8px;cursor:pointer;margin-right:8px">📁 + Section</button>
-                <button onclick="openModal('addProduct')" style="padding:8px 16px;background:#3b82f6;color:#fff;border:none;border-radius:8px;cursor:pointer">+ Product</button>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                    <button onclick="openModal('addSection')" style="padding:8px 16px;background:#8b5cf6;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px">📁 + Section</button>
+                    <button onclick="openModal('addProduct')" style="padding:8px 16px;background:#3b82f6;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px">+ Product</button>
+                </div>
             </div>
             
             <div style="display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap">
@@ -99,6 +68,7 @@
                     <option value="Green">🟢 Green</option>
                     <option value="Silver">⚪ Silver</option>
                     <option value="Pink">🩷 Pink</option>
+                    <option value="Purple">🟣 Purple</option>
                 </select>
             </div>
 
@@ -187,7 +157,7 @@
                 </div>
                 <div style="padding:12px 0;cursor:pointer" onclick="aboutApp()">
                     <span style="font-size:16px">ℹ️ About</span>
-                    <p style="font-size:12px;color:#6b7280">Smart Inventory v2.0 - With Sections</p>
+                    <p style="font-size:12px;color:#6b7280">Smart Inventory v2.0 - 100% Real</p>
                 </div>
             </div>
         </div>
@@ -195,7 +165,7 @@
 </div>
 
 <!-- ============ BOTTOM NAVIGATION ============ -->
-<div id="bottomNav" class="bottom-nav hidden">
+<div class="bottom-nav">
     <div class="nav-item active" onclick="switchPage('home')">
         <span class="icon">🏠</span>
         <span class="label">Home</span>
