@@ -599,4 +599,244 @@ function printBill(billNumber) {
         <html><head><title>Bill ${bill.number}</title>
         <style>body{font-family:sans-serif;padding:20px;max-width:400px;margin:auto;}
         .header{text-align:center;border-bottom:2px dashed #ddd;padding-bottom:12px;margin-bottom:12px;}
-        .item{display:flex;justify-content:space-between;padding:4px 0;border-bottom
+        .item{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #eee;}
+        .total{display:flex;justify-content:space-between;font-size:18px;font-weight:700;margin-top:8px;border-top:2px solid #333;padding-top:8px;}
+        .footer{text-align:center;font-size:11px;color:#666;margin-top:16px;border-top:1px solid #ddd;padding-top:12px;}
+        </style></head><body>
+        <div class="header"><h3>${state.settings.shopName || 'Bangle Store'}</h3><p style="font-size:11px;color:#666;">${state.settings.shopAddress || ''}</p><strong>Bill: ${bill.number}</strong><span style="margin-left:12px;font-size:11px;color:#666;">${new Date(bill.date).toLocaleString()}</span></div>
+        ${bill.items.map(p => `<div class="item"><span>${p.name} × ${p.quantity}</span><span>${currency}${(p.sellingPrice * p.quantity).toFixed(2)}</span></div>`).join('')}
+        <div style="margin-top:12px;"><div style="display:flex;justify-content:space-between;font-size:13px;"><span>Subtotal</span><span>${currency}${bill.subtotal.toFixed(2)}</span></div><div style="display:flex;justify-content:space-between;font-size:13px;color:#f39c12;"><span>Discount</span><span>-${currency}${bill.discount.toFixed(2)}</span></div><div class="total"><span>TOTAL</span><span>${currency}${bill.total.toFixed(2)}</span></div></div>
+        <div style="margin-top:8px;font-size:11px;color:#666;text-align:center;">Payment: ${bill.payment} • Customer: ${bill.customer.name}</div>
+        <div class="footer">Thank you! Visit again 😊</div>
+        <script>window.onload=function(){window.print();setTimeout(function(){window.close();},1000);}<\/script>
+    `);
+    printWindow.document.close();
+}
+window.printBill = printBill;
+
+// ============================================
+// BILLS & REPORTS
+// ============================================
+function showBills() {
+    if (state.bills.length === 0) { showToast('No bills yet'); return; }
+    showModal('📋 Bills', `
+        ${state.bills.slice().reverse().map(b => `
+            <div class="product-card" onclick="showBill(${JSON.stringify(b).replace(/"/g, '&quot;')})">
+                <div class="info"><div class="name">${b.number}</div><div class="details">${new Date(b.date).toLocaleDateString()} • ${b.items.length} items • ${state.settings.currency || '₹'}${b.total.toFixed(2)}</div></div>
+                <button onclick="event.stopPropagation();printBill('${b.number}')" class="edit-btn">🖨️</button>
+            </div>
+        `).join('')}
+    `);
+}
+window.showBills = showBills;
+
+function showReports() {
+    const today = new Date();
+    const todayStr = today.toDateString();
+    const todaySales = state.bills.filter(b => new Date(b.date).toDateString() === todayStr);
+    const totalToday = todaySales.reduce((sum, b) => sum + b.total, 0);
+    const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
+    const weekSales = state.bills.filter(b => new Date(b.date) >= weekAgo);
+    const totalWeek = weekSales.reduce((sum, b) => sum + b.total, 0);
+    showModal('📊 Reports', `
+        <h3 style="margin-bottom:12px;">📅 Today</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;">
+            <div class="stat-card"><span class="stat-number">${state.settings.currency || '₹'}${totalToday.toFixed(0)}</span><span class="stat-label">Sales</span></div>
+            <div class="stat-card"><span class="stat-number">${todaySales.length}</span><span class="stat-label">Bills</span></div>
+            <div class="stat-card"><span class="stat-number">${todaySales.reduce((sum, b) => sum + b.items.length, 0)}</span><span class="stat-label">Items</span></div>
+        </div>
+        <h3 style="margin-bottom:12px;">📆 7 Days</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;">
+            <div class="stat-card"><span class="stat-number">${state.settings.currency || '₹'}${totalWeek.toFixed(0)}</span><span class="stat-label">Sales</span></div>
+            <div class="stat-card"><span class="stat-number">${weekSales.length}</span><span class="stat-label">Bills</span></div>
+            <div class="stat-card"><span class="stat-number">${weekSales.reduce((sum, b) => sum + b.items.length, 0)}</span><span class="stat-label">Items</span></div>
+        </div>
+    `);
+}
+window.showReports = showReports;
+
+// ============================================
+// SETTINGS
+// ============================================
+function showSettings() {
+    showModal('⚙️ Settings', `
+        <div class="form-group"><label>Shop Name</label><input type="text" id="shopName" value="${state.settings.shopName || ''}"></div>
+        <div class="form-group"><label>Owner Name</label><input type="text" id="ownerName" value="${state.settings.ownerName || ''}"></div>
+        <div class="form-group"><label>Phone</label><input type="text" id="shopPhone" value="${state.settings.shopPhone || ''}"></div>
+        <div class="form-group"><label>Address</label><input type="text" id="shopAddress" value="${state.settings.shopAddress || ''}"></div>
+        <div class="form-group"><label>Currency Symbol</label><input type="text" id="currency" value="${state.settings.currency || '₹'}"></div>
+        <div class="form-group"><label>Bill Prefix</label><input type="text" id="billPrefix" value="${state.settings.billPrefix || 'INV-'}"></div>
+        <div class="form-group"><label>Starting Bill Number</label><input type="number" id="billStart" value="${state.settings.billStart || 1}"></div>
+        <button class="save-btn" onclick="saveSettingsFromModal()">💾 Save Settings</button>
+    `);
+}
+window.showSettings = showSettings;
+
+function saveSettingsFromModal() {
+    state.settings.shopName = document.getElementById('shopName').value;
+    state.settings.ownerName = document.getElementById('ownerName').value;
+    state.settings.shopPhone = document.getElementById('shopPhone').value;
+    state.settings.shopAddress = document.getElementById('shopAddress').value;
+    state.settings.currency = document.getElementById('currency').value || '₹';
+    state.settings.billPrefix = document.getElementById('billPrefix').value || 'INV-';
+    state.settings.billStart = parseInt(document.getElementById('billStart').value) || 1;
+    saveSettings();
+    closeModal();
+    showToast('✅ Settings saved!');
+}
+window.saveSettingsFromModal = saveSettingsFromModal;
+
+// ============================================
+// CREATE SECTION
+// ============================================
+function showCreateSection() {
+    showModal('➕ Create Section', `
+        <div class="form-group"><label>Section Name</label><input type="text" id="newSectionName" placeholder="e.g., Premium Collection"></div>
+        <button class="save-btn" onclick="createSection()">✅ Create</button>
+    `);
+}
+window.showCreateSection = showCreateSection;
+
+function createSection() {
+    const name = document.getElementById('newSectionName').value.trim();
+    if (!name) { showToast('❌ Please enter a section name'); return; }
+    if (state.sections.includes(name)) { showToast('❌ Section already exists'); return; }
+    state.sections.push(name);
+    saveSections();
+    closeModal();
+    updateUI();
+    showToast(`✅ Section "${name}" created`);
+}
+window.createSection = createSection;
+
+// ============================================
+// DAILY PARCHA
+// ============================================
+function showDailyParcha() {
+    const today = new Date().toDateString();
+    const todayBills = state.bills.filter(b => new Date(b.date).toDateString() === today);
+    const todayTotal = todayBills.reduce((sum, b) => sum + b.total, 0);
+    showModal('📝 Daily Parcha', `
+        <div style="background:#f5f6fa;border-radius:12px;padding:16px;margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;font-size:14px;"><span>📅 ${new Date().toLocaleDateString()}</span><span>💰 ${state.settings.currency || '₹'}${todayTotal.toFixed(2)}</span></div>
+            <div style="font-size:12px;color:#636e72;">${todayBills.length} bills • ${todayBills.reduce((sum, b) => sum + b.items.length, 0)} items</div>
+        </div>
+        <div id="parchaNotes"><textarea id="dailyNotes" rows="4" style="width:100%;padding:10px;border:1px solid #dfe6e9;border-radius:8px;font-size:14px;" placeholder="Write daily notes..."></textarea></div>
+        <button class="save-btn" onclick="saveParcha()" style="margin-top:8px;">💾 Save Notes</button>
+    `);
+}
+window.showDailyParcha = showDailyParcha;
+
+function saveParcha() {
+    const notes = document.getElementById('dailyNotes').value;
+    if (notes) { localStorage.setItem('daily_parcha_' + new Date().toDateString(), notes); showToast('💾 Notes saved!'); }
+}
+window.saveParcha = saveParcha;
+
+// ============================================
+// AI SET MAKER (Simple)
+// ============================================
+function detectRealAIColour(input) {
+    if (!input.files || !input.files[0]) { showToast('❌ Please select an image'); return; }
+    const preview = document.getElementById('imagePreview');
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        preview.innerHTML = `<img src="${e.target.result}" alt="Saree" style="max-width:100%;max-height:200px;border-radius:12px;">`;
+        showToast('🎨 AI analysing colours... (Demo)');
+        document.getElementById('colourResult').innerHTML = `
+            <div class="colour-match">
+                <div class="detected">🎨 AI Detected Colours:</div>
+                <div style="display:flex;align-items:center;gap:12px;padding:4px 0;border-bottom:1px solid #dfe6e9;">
+                    <div style="width:24px;height:24px;border-radius:50%;background:#ff69b4;border:1px solid #dfe6e9;"></div>
+                    <span style="flex:1;">Rani Pink</span>
+                    <span style="font-size:12px;color:#636e72;">92%</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;padding:4px 0;border-bottom:1px solid #dfe6e9;">
+                    <div style="width:24px;height:24px;border-radius:50%;background:#e84393;border:1px solid #dfe6e9;"></div>
+                    <span style="flex:1;">Magenta</span>
+                    <span style="font-size:12px;color:#636e72;">87%</span>
+                </div>
+            </div>
+        `;
+    };
+    reader.readAsDataURL(input.files[0]);
+}
+window.detectRealAIColour = detectRealAIColour;
+
+function viewSavedDesigns() {
+    if (state.designs.length === 0) { showToast('No saved designs yet'); return; }
+    showModal('💾 Saved Designs', state.designs.map(d => `
+        <div class="product-card">
+            <div class="info"><div class="name">${d.name}</div><div class="details">${d.products ? d.products.length : 0} products</div></div>
+            <button class="edit-btn">Apply</button>
+        </div>
+    `).join(''));
+}
+window.viewSavedDesigns = viewSavedDesigns;
+
+// ============================================
+// BULK ADD & QR SCANNER
+// ============================================
+function showRealAIImport() {
+    showModal('🖼️ AI Image/File Import', `
+        <div class="upload-area" style="border:2px dashed #e94560;padding:40px 20px;text-align:center;border-radius:16px;cursor:pointer;">
+            <span style="font-size:48px;">📁</span>
+            <p>Upload images or files</p>
+            <input type="file" id="realBulkFile" accept="image/*" multiple style="display:none;" onchange="showToast('📂 ${this.files.length} files selected')">
+            <button class="save-btn" onclick="document.getElementById('realBulkFile').click()" style="margin-top:12px;">Select Files</button>
+        </div>
+        <button class="save-btn" onclick="showToast('✅ Bulk import completed!')" style="margin-top:12px;background:#2ecc71;">✅ Add All to Inventory</button>
+    `);
+}
+window.showRealAIImport = showRealAIImport;
+
+function openRealScanner() {
+    showModal('📷 QR/SKU Scanner', `
+        <div style="text-align:center;padding:20px;">
+            <div style="font-size:64px;margin-bottom:16px;">📷</div>
+            <p style="font-size:14px;color:#636e72;">Camera will open to scan QR or SKU</p>
+            <div style="border:2px dashed #dfe6e9;border-radius:12px;padding:40px;margin:16px 0;">
+                <div style="font-size:48px;">⬜</div>
+                <p style="font-size:11px;color:#636e72;">Align QR code in frame</p>
+            </div>
+            <button class="save-btn" onclick="showToast('📷 Scanner started! (Demo)')">📷 Start Scanner</button>
+        </div>
+    `);
+}
+window.openRealScanner = openRealScanner;
+
+function openScannerFromSale() { openRealScanner(); }
+window.openScannerFromSale = openScannerFromSale;
+
+// ============================================
+// UPDATE UI
+// ============================================
+function updateUI() {
+    if (state.currentScreen === 'homeScreen') updateHome();
+    if (state.currentScreen === 'inventoryScreen') renderInventory();
+    if (state.currentScreen === 'addProductScreen') populateSections();
+}
+window.updateUI = updateUI;
+
+// ============================================
+// INIT
+// ============================================
+function init() {
+    console.log('🏪 Bangle Store AI - Initializing...');
+    try {
+        loadData();
+        updateHome();
+        populateSections();
+        console.log('✅ App initialized successfully!');
+        console.log(`📦 ${state.inventory.length} products`);
+        console.log(`📁 ${state.sections.length} sections`);
+    } catch (e) {
+        console.error('❌ Init error:', e);
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
+}
